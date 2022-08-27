@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -11,7 +12,6 @@ public class PlayerController : MonoBehaviour
     public bool hasPowerUp;
     private float powerupStrength=15.0f;
     public bool spaceMisuse;
-    // Start is called before the first frame update
     void Start()
     {
         playerRb=GetComponent<Rigidbody>();
@@ -24,16 +24,20 @@ public class PlayerController : MonoBehaviour
     {
         float forwardInput=Input.GetAxis("Vertical");
 
-        
+        if(transform.position.y<-2)
+        {
+            MainMenu.instance.LoseScreen();
+            Destroy(gameObject);
+        }
         if(Input.GetKeyDown(KeyCode.Space) && !spaceMisuse){
-            StartCoroutine(stopPlayer());
+            StartCoroutine(StopPlayer());
             spaceMisuse=true;
         }
-        playerRb.AddForce(focalPoint.transform.forward*speed*forwardInput);
+        playerRb.AddForce(focalPoint.transform.forward * (speed * forwardInput));
         powerupIndicator.transform.position=transform.position+ new Vector3(0,-0.5f,0);
         powerupIndicator.transform.rotation = Quaternion.Euler(0,0,0);
     }
-    IEnumerator stopPlayer()
+    IEnumerator StopPlayer()
     {
         playerRb.isKinematic=true;
         yield return new WaitForSeconds(0.1f);
@@ -42,19 +46,26 @@ public class PlayerController : MonoBehaviour
         spaceMisuse=false;
     }
     private void OnTriggerEnter(Collider other) {
-        
+
         if(other.CompareTag("Powerup"))
         {
             hasPowerUp=true;
             Destroy(other.gameObject);
-            
+
             powerupIndicator.gameObject.SetActive(true);
             StartCoroutine(PowerupCountdownRoutine());
         }
     }
     IEnumerator PowerupCountdownRoutine(){
-        yield return new WaitForSeconds(7);
+        int count=7;
+        MainMenu.instance.powerUpTime.gameObject.SetActive(true);
+        while(count>0){
+            MainMenu.instance.powerUpTime.text="Remaining Power Up Time: "+count.ToString();
+            yield return new WaitForSeconds(1);
+            count--;
+        }
         hasPowerUp=false;
+        MainMenu.instance.powerUpTime.gameObject.SetActive(false);
         powerupIndicator.gameObject.SetActive(false);
     }
     private void OnCollisionEnter(Collision collision) {
@@ -66,6 +77,6 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Player collided with:" + collision.gameObject.name + " with powerup set to"+ hasPowerUp);
             enemyRigidbody.AddForce(awayFromPlayer*powerupStrength,ForceMode.Impulse);
         }
-        
+
     }
 }

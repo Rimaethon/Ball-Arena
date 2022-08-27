@@ -13,9 +13,6 @@ public class SpawnManager : MonoBehaviour
     void Start()
     {
       SpawnEnemyWave(waveNumber);
-        
-
-        
     }
 
     // Update is called once per frame
@@ -27,7 +24,7 @@ public class SpawnManager : MonoBehaviour
             SpawnEnemyWave(waveNumber);
             Instantiate(powerupPrefab, GenerateSpawnPosition(),powerupPrefab.transform.rotation);
         }
-        
+
     }
     void SpawnEnemyWave(int enemiesToSpawn)
     {
